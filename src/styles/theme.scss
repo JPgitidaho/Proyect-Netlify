@@ -1,0 +1,16 @@
+@import './variables';
+
+.light {
+  --bg: #{$light-bg};
+  --surface: #{$light-surface};
+  --text: #{$light-text};
+  --primary: #{$primary};
+  --accent: #{$accent};
+}
+.dark {
+  --bg: #{$color-bg};
+  --surface: #{$color-surface};
+  --text: #{$color-text};
+  --primary: #{$primary};
+  --accent: #{$accent};
+}
