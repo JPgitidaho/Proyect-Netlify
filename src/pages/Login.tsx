@@ -1,26 +1,34 @@
 import { useState } from 'react'
-import type { FormEvent } from 'react'
-import { useAuth } from '../auth/AuthContext'
+import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../auth/useAuth'
 
 export default function Login() {
-  const { login, loading, error } = useAuth()
-  const [email, setEmail] = useState('juanita@mail.com')
-  const [password, setPassword] = useState('123456')
+  const { login, loading, isAuthenticated } = useAuth()
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState<string | null>(null)
+  const nav = useNavigate()
 
-  async function onSubmit(e: FormEvent) {
+  async function onSubmit(e: React.FormEvent) {
     e.preventDefault()
-    await login(email, password)
+    setError(null)
+    try {
+      await login({ email, password })
+      nav('/profile', { replace: true })
+    } catch (err: any) {
+      setError(err?.message ?? 'Error de login')
+    }
   }
 
+  if (isAuthenticated) return null
+
   return (
-    <div style={{ display:'grid', gap:12, maxWidth:360, margin:'40px auto' }}>
-      <h2>Iniciar sesión</h2>
-      <form onSubmit={onSubmit} style={{ display:'grid', gap:10 }}>
-        <input placeholder="Email" value={email} onChange={e=>setEmail(e.target.value)} />
-        <input placeholder="Password" type="password" value={password} onChange={e=>setPassword(e.target.value)} />
-        <button disabled={loading}>{loading ? 'Ingresando…' : 'Entrar'}</button>
-      </form>
-      {error && <p style={{ color:'tomato' }}>{error}</p>}
-    </div>
+    <form onSubmit={onSubmit} style={{ maxWidth: 360, margin: '24px auto', display: 'grid', gap: 12 }}>
+      <h2>Ingresar</h2>
+      <input placeholder="Email" value={email} onChange={e=>setEmail(e.target.value)} />
+      <input placeholder="Password" type="password" value={password} onChange={e=>setPassword(e.target.value)} />
+      {error && <div style={{ color:'crimson' }}>{error}</div>}
+      <button disabled={loading}>{loading ? 'Ingresando...' : 'Entrar'}</button>
+    </form>
   )
 }

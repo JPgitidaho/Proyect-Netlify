@@ -1,13 +1,13 @@
-import { useAuth } from '../auth/AuthContext'
+import { useEffect } from 'react'
+import { useAuth } from '../auth/useAuth'
 
 export default function Profile() {
-  const { user, exp, logout } = useAuth()
+  const { user, refreshUser } = useAuth()
+  useEffect(() => { if (!user) refreshUser() }, [user, refreshUser])
   return (
-    <div style={{ display:'grid', gap:12, maxWidth:480, margin:'40px auto' }}>
+    <div className="section">
       <h2>Perfil</h2>
-      <p>Email: {user?.email}</p>
-      <p>Expira: {exp ? new Date(exp).toLocaleTimeString() : '-'}</p>
-      <button onClick={logout}>Cerrar sesión</button>
+      <pre>{JSON.stringify(user ?? {}, null, 2)}</pre>
     </div>
   )
 }

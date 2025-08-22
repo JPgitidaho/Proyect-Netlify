@@ -36,9 +36,12 @@ function readStored(): AuthState {
 }
 
 async function http<T>(path: string, init?: RequestInit): Promise<T> {
-  const r = await fetch(`${API_URL}${path}`, { headers: { 'Content-Type': 'application/json', ...(init?.headers||{}) }, ...init })
+  const r = await fetch(`${API_URL}${path}`, {
+    headers: { 'Content-Type': 'application/json', ...(init?.headers || {}) },
+    ...init,
+  })
   if (!r.ok) {
-    let msg = 'Error de solicitud'
+    let msg = 'Error'
     try { const d = await r.json(); msg = (d?.message as string) ?? msg } catch {}
     throw new Error(msg)
   }
@@ -58,14 +61,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = useCallback(async (input: LoginInput) => {
     setLoading(true)
     try {
-      const data = await http<{ token: string; exp: number; user: User }>('/auth/login', { method: 'POST', body: JSON.stringify(input) })
+      const data = await http<{ token: string; exp: number; user: User }>('/auth/login', {
+        method: 'POST',
+        body: JSON.stringify(input),
+      })
       persist({ token: data.token, exp: data.exp, user: data.user })
-    } finally { setLoading(false) }
+    } finally {
+      setLoading(false)
+    }
   }, [persist])
 
-  const logout = useCallback(() => { persist({ token: null, exp: null, user: null }) }, [persist])
+  const logout = useCallback(() => {
+    persist({ token: null, exp: null, user: null })
+  }, [persist])
 
-  const authHeaders = useCallback(() => state.token ? ({ Authorization: `Bearer ${state.token}` }) : ({}), [state.token])
+  const authHeaders = useCallback(() => {
+    return state.token ? { Authorization: `Bearer ${state.token}` } : {}
+  }, [state.token])
 
   const refreshUser = useCallback(async () => {
     if (!state.token) return
@@ -76,7 +88,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!state.token || !state.exp) return
     const msLeft = state.exp * 1000 - Date.now()
-    if (msLeft <= 0) { logout(); return }
+    if (msLeft <= 0) {
+      logout()
+      return
+    }
     const id = setTimeout(logout, msLeft)
     return () => clearTimeout(id)
   }, [state.token, state.exp, logout])
